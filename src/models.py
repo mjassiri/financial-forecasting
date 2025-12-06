@@ -1,3 +1,4 @@
+from statsmodels.tsa.arima.model import ARIMA
 import pandas as pd
 
 
@@ -23,3 +24,21 @@ def moving_average_forecast(train: pd.Series, val: pd.Series, window: int = 30) 
     preds = rolling.loc[val.index]
     preds.name = f"ma_{window}"
     return preds
+
+def arima_forecast(train: pd.Series, val: pd.Series, order=(5, 1, 0)) -> pd.Series:
+    """
+    ARIMA forecasting model.
+    order = (p, d, q) controls the autoregressive, differencing, and moving average parts.
+    """
+    # Fit the model on the training data only
+    model = ARIMA(train, order=order)
+    model_fit = model.fit()
+
+    # Forecast the next len(val) points
+    preds = model_fit.forecast(steps=len(val))
+
+    # Align index with validation dates
+    preds.index = val.index
+    preds.name = f"arima_{order}"
+    return preds
+
